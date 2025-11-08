@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.pyt
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# dotenv
+.env
+.env.*
+
+# SQLite DB
+*.sqlite3
+*.db
+backend/dev.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build / dist
+dist/
+build/
+
+# Testing
+.pytest_cache/
+coverage.xml
+htmlcov/
+
+# pip
+pip-wheel-metadata/
+
+# Logs
+*.log
+
+# Misc
+*.lock
+
+# Local dev overrides
+/local.env
+
+# End of file
