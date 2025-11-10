@@ -74,16 +74,22 @@ Open the shown localhost URL.
 ```
 uvicorn main:app --host 0.0.0.0 --port 10000
 ```
+- Deployed Url: https://deepklarity-ass-2.onrender.com/
 - Environment variables:
   - DATABASE_URL
   - GEMINI_API_KEY
   - USE_MOCK_LLM (optional)
 
-### Frontend (Netlify/Render)
+### Frontend (vercel)
 - Build command: `npm run build`
 - Publish directory: `dist`
-- Env:
-  - VITE_API_BASE_URL = <your deployed backend URL>
+- Deployed Url: https://deepklarity-ass-2.vercel.app/
+
+
+## Screenshots
+![Generate Quiz Page](./images/screenshot1.png)
+![History Page](./images/screenshot3.png)
+![Quiz Details Modal](./images/screenshot2.png)
 
 ## Notes
 - The backend includes a mock mode (`USE_MOCK_LLM=true`) so you can test without a Gemini key.
