@@ -44,7 +44,7 @@ USE_MOCK_LLM=false
 
 Create a `frontend/.env` with:
 ```
-VITE_API_BASE_URL="http://localhost:10000"
+VITE_API_BASE_URL="https://deepklarity-ass-2.onrender.com"
 ```
 
 ## Backend - Local Run
