@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 from typing import Any, Dict, List
 
@@ -18,39 +21,66 @@ class GenerateQuizInput(BaseModel):
 
 app = FastAPI(title="AI Wiki Quiz Generator", version="1.0.0")
 
-# CORS (allow all during dev; tighten in prod)
+# CORS configuration for local development
+# Allow requests from Vite dev server (localhost:5173)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, OPTIONS, etc.)
+    allow_headers=["*"],  # Allow all headers
 )
 
 
 @app.on_event("startup")
 def on_startup() -> None:
     Base.metadata.create_all(bind=engine)
+    
+    # Temporary debug log: verify GEMINI_API_KEY is loaded
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if gemini_key:
+        # Mask the key for security (show first 8 chars only)
+        masked_key = gemini_key[:8] + "..." if len(gemini_key) > 8 else "***"
+        print(f"[STARTUP DEBUG] GEMINI_API_KEY is loaded: {masked_key} (length: {len(gemini_key)})")
+    else:
+        print("[STARTUP DEBUG] GEMINI_API_KEY is NOT loaded")
 
 
 @app.post("/generate_quiz")
 def generate_quiz(payload: GenerateQuizInput, db: Session = Depends(get_db)) -> Dict[str, Any]:
-    url_str = str(payload.url)
-    if "wikipedia.org" not in url_str:
-        raise HTTPException(status_code=400, detail="Only Wikipedia URLs are supported.")
+    try:
+        url_str = str(payload.url)
+        if "wikipedia.org" not in url_str:
+            raise HTTPException(status_code=400, detail="Only Wikipedia URLs are supported.")
 
-    title, content = scrape_wikipedia(url_str)
-    quiz_json = generate_quiz_json(url=url_str, title=title, content=content)
+        title, content = scrape_wikipedia(url_str)
+        quiz_json = generate_quiz_json(url=url_str, title=title, content=content)
 
-    # Basic validation of expected fields
-    if not isinstance(quiz_json, dict) or "quiz" not in quiz_json:
-        raise HTTPException(status_code=502, detail="LLM returned invalid response.")
+        # Basic validation of expected fields
+        if not isinstance(quiz_json, dict) or "quiz" not in quiz_json:
+            raise HTTPException(status_code=502, detail="LLM returned invalid response.")
 
-    record = Quiz(url=url_str, title=quiz_json.get("title", title), data=quiz_json)
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-    return quiz_json | {"id": record.id}
+        record = Quiz(url=url_str, title=quiz_json.get("title", title), data=quiz_json)
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        return quiz_json | {"id": record.id}
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is (they have proper status codes and CORS headers)
+        raise
+    except Exception as e:
+        # Catch any other exceptions and return a proper error response with CORS headers
+        import traceback
+        error_msg = str(e)
+        error_type = type(e).__name__
+        print(f"\n{'='*60}")
+        print(f"ERROR in /generate_quiz:")
+        print(f"Type: {error_type}")
+        print(f"Message: {error_msg}")
+        print(f"Traceback:\n{traceback.format_exc()}")
+        print(f"{'='*60}\n")
+        # Return error with proper HTTP status code so CORS headers are applied
+        raise HTTPException(status_code=500, detail=f"Internal server error: {error_msg}")
 
 
 @app.get("/history")
