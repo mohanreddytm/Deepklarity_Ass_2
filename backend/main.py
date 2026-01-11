@@ -25,7 +25,7 @@ app = FastAPI(title="AI Wiki Quiz Generator", version="1.0.0")
 # Allow requests from Vite dev server (localhost:5173)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["https://deepklarity-ass-2.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, OPTIONS, etc.)
     allow_headers=["*"],  # Allow all headers
